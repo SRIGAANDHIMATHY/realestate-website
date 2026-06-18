@@ -16,47 +16,10 @@ import {
   deleteProperty,
 } from "../../services/propertyService";
 
-const initialProperties = [
-  {
-    id: 1,
-    title: "Luxury Villa - Hyderabad",
-    type: "Villa",
-    location: "Hitech City",
-    price: "₹2.5 Cr",
-    views: 1248,
-    inquiries: 52,
-    shortlisted: 28,
-    updated: "08 Jun 2026",
-    status: "Active",
-  },
-  {
-    id: 2,
-    title: "Skyline Apartment",
-    type: "Apartment",
-    location: "Whitefield",
-    price: "₹98 Lakhs",
-    views: 842,
-    inquiries: 34,
-    shortlisted: 16,
-    updated: "07 Jun 2026",
-    status: "Pending Approval",
-  },
-  {
-    id: 3,
-    title: "Commercial Space",
-    type: "Commercial",
-    location: "OMR Chennai",
-    price: "₹1.8 Cr",
-    views: 516,
-    inquiries: 18,
-    shortlisted: 9,
-    updated: "05 Jun 2026",
-    status: "Draft",
-  },
-];
 
 export default function PropertyListPage() {
   const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [properties, setProperties] = useState<any[]>([]);
 
   // const getAllProperties = async () => {
@@ -74,6 +37,7 @@ export default function PropertyListPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProperties();
   }, []);
 
