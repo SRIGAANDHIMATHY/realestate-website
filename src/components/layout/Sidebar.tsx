@@ -82,12 +82,12 @@ export default function Sidebar({ role }: SidebarProps) {
         { label: "Moderation", path: "/admin/moderation", icon: ShieldCheck },
       ],
     },
-    {
-      section: "SUPPORT",
-      items: [
-        { label: "Inquiries", path: "/admin/inquiries", icon: MessageSquare },
-      ],
-    },
+    // {
+    //   section: "SUPPORT",
+    //   items: [
+    //     { label: "Inquiries", path: "/admin/inquiries", icon: MessageSquare },
+    //   ],
+    // },
     {
       section: "INSIGHTS",
       items: [

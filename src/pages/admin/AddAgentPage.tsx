@@ -1,11 +1,33 @@
 import { useState } from "react";
 import MainLayout from "../../components/layout/MainLayout";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Upload} from "lucide-react";
+import { Eye, EyeOff} from "lucide-react";
+import { registerAgent } from "../../services/agentService";
+
 
 export default function AddAgentPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+  fullName: "",
+  email: "",
+  phone: "",
+  experienceYears: "",
+  password: "",
+  confirmPassword: "",
+  agencyName: "",
+  licenseNumber: "",
+  officeAddress: "",
+});
+const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+) => {
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value,
+  });
+};
   const navigate = useNavigate();
 
   const availableDays = [
@@ -18,10 +40,33 @@ export default function AddAgentPage() {
     "Sunday",
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  try {
+    await registerAgent({
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+      agencyName: formData.agencyName,
+      licenseNumber: formData.licenseNumber,
+      experienceYears: Number(formData.experienceYears),
+      officeAddress: formData.officeAddress,
+    });
+
+    alert("Agent Registered Successfully");
     navigate("/admin/agents");
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to register agent");
+  }
+};
 
   return (
     <MainLayout role="admin" title="Add New Agent">
@@ -39,21 +84,7 @@ export default function AddAgentPage() {
         {/* Main Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-100 p-8 shadow-premium-soft space-y-8">
           {/* Profile Image */}
-          <div>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4 border-b pb-2 border-slate-50 font-heading">
-              Profile Image
-            </h3>
-
-            <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-3xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group bg-slate-50/50">
-              <Upload size={32} className="text-slate-400 mb-3 group-hover:text-blue-500 transition-colors" />
-              <p className="text-xs font-semibold text-slate-600">
-                Upload Agent Profile Photo
-              </p>
-              <p className="text-[10px] text-slate-400 mt-1">
-                Supports JPG, PNG up to 2MB
-              </p>
-            </div>
-          </div>
+          
 
           {/* Personal Information */}
           <div>
@@ -67,11 +98,14 @@ export default function AddAgentPage() {
                   Full Name *
                 </label>
                 <input
-                  type="text"
-                  required
-                  placeholder="Alex Jones"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
-                />
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Alex Jones"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
+                  />
               </div>
 
               <div>
@@ -80,6 +114,9 @@ export default function AddAgentPage() {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   required
                   placeholder="alex@agency.com"
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
@@ -92,6 +129,9 @@ export default function AddAgentPage() {
                 </label>
                 <input
                   type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   required
                   placeholder="+91 98765 43210"
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
@@ -104,6 +144,9 @@ export default function AddAgentPage() {
                 </label>
                 <input
                   type="number"
+                  name="experienceYears"
+                  value={formData.experienceYears}
+                  onChange={handleChange}
                   placeholder="e.g. 5"
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
                 />
@@ -125,9 +168,12 @@ export default function AddAgentPage() {
 
                 <div className="relative mt-1.5">
                   <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    placeholder="Create temporary password"
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Create temporary password"
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-xs pr-12 outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
                   />
 
@@ -148,9 +194,12 @@ export default function AddAgentPage() {
 
                 <div className="relative mt-1.5">
                   <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    placeholder="Confirm temporary password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      placeholder="Confirm temporary password"
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-xs pr-12 outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
                   />
 
@@ -179,6 +228,9 @@ export default function AddAgentPage() {
                 </label>
                 <input
                   type="text"
+                  name="agencyName"
+                  value={formData.agencyName}
+                  onChange={handleChange}
                   required
                   placeholder="Elite Realtors"
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
@@ -191,6 +243,9 @@ export default function AddAgentPage() {
                 </label>
                 <input
                   type="text"
+                  name="licenseNumber"
+                  value={formData.licenseNumber}
+                  onChange={handleChange}
                   required
                   placeholder="REA-IND-92837"
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800"
@@ -203,6 +258,9 @@ export default function AddAgentPage() {
                 </label>
                 <textarea
                   rows={3}
+                  name="officeAddress"
+                  value={formData.officeAddress}
+                  onChange={handleChange}
                   required
                   placeholder="Enter complete brokerage office address..."
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 mt-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 bg-slate-50/50 transition-all font-medium text-slate-800 resize-none"

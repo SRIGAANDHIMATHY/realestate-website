@@ -18,6 +18,7 @@ const platformGrowthData = [
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
+  
   const [stats, setStats] = useState({
   totalUsers: 0,
   totalProperties: 0,

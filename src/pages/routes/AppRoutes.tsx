@@ -19,7 +19,6 @@ import AdminDashboardPage from "../admin/AdminDashboardPage";
 import AddAgentPage from "../admin/AddAgentPage";
 import AgentManagementPage from "../admin/AgentManagementPage";
 import CustomerManagementPage from "../admin/CustomerManagementPage";
-import InquiryManagementPageAdmin from "../admin/InquiryManagementPage";
 import ListingModerationPage from "../admin/ListingModerationPage";
 import PlatformAnalyticsPage from "../admin/PlatformAnalyticsPage";
 import AdminProfilePage from "../admin/AdminProfilePage";
@@ -50,7 +49,6 @@ export default function AppRoutes() {
       <Route path="/admin/agents" element={<AgentManagementPage />} />
       <Route path="/admin/agents/new" element={<AddAgentPage />} />
       <Route path="/admin/customers" element={<CustomerManagementPage />} />
-      <Route path="/admin/inquiries" element={<InquiryManagementPageAdmin />} />
       <Route path="/admin/moderation" element={<ListingModerationPage />} />
       <Route path="/admin/analytics" element={<PlatformAnalyticsPage />} />
       <Route path="/admin/profile" element={<AdminProfilePage />} />

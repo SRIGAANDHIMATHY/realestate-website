@@ -10,41 +10,105 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const listings = [
-  {
-    id: 1,
-    title: "Luxury Villa - Hyderabad",
-    type: "Villa",
-    location: "Hitech City",
-    price: "₹2.5 Cr",
-    agent: "Alex Realty",
-    submitted: "08 Jun 2026",
-    status: "Pending",
-  },
-  {
-    id: 2,
-    title: "Skyline Apartment",
-    type: "Apartment",
-    location: "Whitefield",
-    price: "₹98 Lakhs",
-    agent: "Urban Homes",
-    submitted: "07 Jun 2026",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    title: "Commercial Space",
-    type: "Commercial",
-    location: "OMR Chennai",
-    price: "₹1.8 Cr",
-    agent: "Elite Realty",
-    submitted: "06 Jun 2026",
-    status: "Revision Requested",
-  },
-];
+import {
+  getPendingProperties,
+  approveProperty,
+  rejectProperty,
+  getListingStats
+} from "../../services/adminService";
+
+
 
 export default function ListingModerationPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [listings, setListings] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] =
+  useState("");
+
+const [selectedStatus] =
+  useState("ALL");
+
+const [stats, setStats] = useState({
+  totalListings: 0,
+  pendingListings: 0,
+  approvedListings: 0,
+  rejectedListings: 0,
+});
+
+const loadStats = async () => {
+  try {
+    const data = await getListingStats();
+    setStats(data);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+useEffect(() => {
+  // eslint-disable-next-line react-hooks/immutability
+  loadProperties();
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  loadStats();
+}, []);
+
+const loadProperties = async () => {
+  try {
+    const data =
+      await getPendingProperties();
+
+    setListings(data);
+  } catch (err) {
+    console.error(err);
+  }
+};
+const handleApprove = async (
+  propertyId: number
+) => {
+  try {
+    await approveProperty(propertyId);
+
+    loadProperties();
+    loadStats();
+
+    alert("Property Approved");
+  } catch (err) {
+    console.error(err);
+  }
+};
+const handleReject = async (
+  propertyId: number
+) => {
+  try {
+    await rejectProperty(propertyId);
+
+    loadProperties();
+    loadStats();
+
+    alert("Property Rejected");
+  } catch (err) {
+    console.error(err);
+  }
+};
+const filteredListings = listings.filter(
+  (listing) => {
+
+    const matchesSearch =
+      listing.title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      listing.city
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      selectedStatus === "ALL" ||
+      listing.listingStatus === selectedStatus;
+
+    return matchesSearch && matchesStatus;
+  }
+);
 
   return (
     <MainLayout role="admin" title="Listing Moderation">
@@ -62,10 +126,10 @@ export default function ListingModerationPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: "Total Platform Listings", value: "12,584", icon: Building2, color: "text-blue-600 bg-blue-50/50" },
-            { label: "Pending Reviews", value: "84", icon: Clock3, color: "text-amber-500 bg-amber-50/50" },
-            { label: "Approved Listings", value: "11,924", icon: ShieldCheck, color: "text-emerald-600 bg-emerald-50/50" },
-            { label: "Rejected / Suspended", value: "576", icon: AlertTriangle, color: "text-rose-600 bg-rose-50/50" },
+            { label: "Total Platform Listings", value: stats.totalListings, icon: Building2, color: "text-blue-600 bg-blue-50/50" },
+            { label: "Pending Reviews", value: stats.pendingListings, icon: Clock3, color: "text-amber-500 bg-amber-50/50" },
+            { label: "Approved Listings", value: stats.approvedListings, icon: ShieldCheck, color: "text-emerald-600 bg-emerald-50/50" },
+            { label: "Rejected / Suspended", value: stats.rejectedListings, icon: AlertTriangle, color: "text-rose-600 bg-rose-50/50" },
           ].map((kpi, idx) => {
             const Icon = kpi.icon;
             return (
@@ -90,7 +154,10 @@ export default function ListingModerationPage() {
         <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-premium-soft flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full md:w-80">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
+            <input value={searchTerm}
+              onChange={(e) =>
+                setSearchTerm(e.target.value)
+              }
               type="text"
               placeholder="Search by property title, agent, location..."
               className="w-full border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-xs bg-slate-50/50 outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-500 transition-all"
@@ -127,30 +194,32 @@ export default function ListingModerationPage() {
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {listings.map((listing) => (
-                  <tr key={listing.id} className="hover:bg-slate-50/50 transition-colors">
+                {filteredListings.map((listing) => (
+                  <tr key={listing.propertyId} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div>
                         <div className="font-semibold text-slate-800">{listing.title}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">ID: LST-00{listing.id}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">ID: LST-00{listing.propertyId}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 font-medium">{listing.type}</td>
-                    <td className="px-6 py-4 text-slate-500 font-medium">{listing.location}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-700">{listing.price}</td>
-                    <td className="px-6 py-4 font-medium text-slate-600">{listing.agent}</td>
-                    <td className="px-6 py-4 text-slate-400">{listing.submitted}</td>
+                    <td className="px-6 py-4 text-slate-500 font-medium">{listing.propertyType}</td>
+                    <td className="px-6 py-4 text-slate-500 font-medium">{listing.city}</td>
+                    <td className="px-6 py-4 font-semibold text-slate-700">₹ {Number(listing.price).toLocaleString()}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600">Agent #{listing.agentId}</td>
+                    <td className="px-6 py-4 text-slate-400">{new Date(
+ listing.createdAt
+).toLocaleDateString()}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${
-                          listing.status === "Pending"
+                          listing.listingStatus === "PENDING_REVIEW"
                             ? "bg-amber-50 text-amber-600 border-amber-100"
-                            : listing.status === "Approved"
+                            : listing.listingStatus === "APPROVED"
                             ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                            : "bg-blue-50 text-blue-600 border-blue-100"
-                        }`}
+                            : "bg-rose-50 text-rose-600 border-rose-100"
+}`}
                       >
-                        {listing.status}
+                        {listing.listingStatus}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -158,10 +227,14 @@ export default function ListingModerationPage() {
                         <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-colors" title="Review documentation">
                           <Eye size={14} />
                         </button>
-                        <button className="p-1.5 rounded-lg border border-emerald-100 bg-emerald-50/20 hover:bg-emerald-50 text-emerald-600 transition-colors" title="Approve listing">
+                        <button className="p-1.5 rounded-lg border border-emerald-100 bg-emerald-50/20 hover:bg-emerald-50 text-emerald-600 transition-colors" title="Approve listing" onClick={() =>
+    handleApprove(listing.propertyId)
+  }>
                           <CheckCircle2 size={14} />
                         </button>
-                        <button className="p-1.5 rounded-lg border border-rose-100 bg-rose-50/20 hover:bg-rose-50 text-rose-600 transition-colors" title="Reject listing">
+                        <button className="p-1.5 rounded-lg border border-rose-100 bg-rose-50/20 hover:bg-rose-50 text-rose-600 transition-colors" title="Reject listing"  onClick={() =>
+    handleReject(listing.propertyId)
+  }>
                           <XCircle size={14} />
                         </button>
                         <button className="p-1.5 rounded-lg border border-blue-100 bg-blue-50/20 hover:bg-blue-50 text-blue-600 transition-colors" title="Request revision">
