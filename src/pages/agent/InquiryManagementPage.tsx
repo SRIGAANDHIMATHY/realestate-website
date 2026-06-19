@@ -1,15 +1,28 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Search, Phone, Send } from "lucide-react";
 
+/* ================= TYPES ================= */
+type Sender = "customer" | "agent";
+
+type Message = {
+  sender: Sender;
+  text: string;
+};
+
+type User = {
+  name: string;
+  email: string;
+};
+
 export default function InquiryManagementUI() {
-  const [activeUser, setActiveUser] = useState({
+  const [activeUser, setActiveUser] = useState<User>({
     name: "John Smith",
     email: "johnsmith@gmail.com",
   });
 
-  const [messageInput, setMessageInput] = useState("");
+  const [messageInput, setMessageInput] = useState<string>("");
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       sender: "customer",
       text: "Hi, I'm interested in the 3BHK apartment listing.",
@@ -28,37 +41,40 @@ export default function InquiryManagementUI() {
     },
   ]);
 
-  // 🎯 Send Message
+  /* ================= SEND MESSAGE ================= */
   const sendMessage = () => {
     if (!messageInput.trim()) return;
 
-    const newMessage = {
+    const newMessage: Message = {
       sender: "agent",
       text: messageInput,
     };
 
     setMessages((prev) => [...prev, newMessage]);
+    const currentText = messageInput;
     setMessageInput("");
 
-    // 🤖 Auto reply simulation
     setTimeout(() => {
-      const autoReply = {
+      const autoReply: Message = {
         sender: "customer",
-        text: getAutoReply(messageInput),
+        text: getAutoReply(currentText),
       };
 
       setMessages((prev) => [...prev, autoReply]);
     }, 900);
   };
 
-  // 🤖 Simple AI-like reply logic
-  const getAutoReply = (text: string) => {
+  /* ================= AUTO REPLY ================= */
+  const getAutoReply = (text: string): string => {
     const msg = text.toLowerCase();
 
     if (msg.includes("price")) return "Sure, the price starts from ₹85 Lakhs.";
     if (msg.includes("visit")) return "Yes, I can schedule a visit for you.";
-    if (msg.includes("location")) return "It is located in a prime area of the city.";
-    if (msg.includes("bhk")) return "We have 1BHK, 2BHK, and 3BHK options.";
+    if (msg.includes("location"))
+      return "It is located in a prime area of the city.";
+    if (msg.includes("bhk"))
+      return "We have 1BHK, 2BHK, and 3BHK options.";
+
     return "Got it 👍 Our team will get back to you shortly.";
   };
 
@@ -66,7 +82,7 @@ export default function InquiryManagementUI() {
     <div className="h-screen bg-slate-100 p-6">
       <div className="grid grid-cols-12 gap-6 h-full">
 
-        {/* LEFT SIDEBAR */}
+        {/* ================= LEFT SIDEBAR ================= */}
         <div className="col-span-4">
           <div className="bg-white rounded-3xl shadow-lg h-full flex flex-col overflow-hidden">
 
@@ -80,7 +96,10 @@ export default function InquiryManagementUI() {
               </p>
 
               <div className="relative mt-4">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
 
                 <input
                   placeholder="Search conversation..."
@@ -99,8 +118,12 @@ export default function InquiryManagementUI() {
                   })
                 }
               >
-                <h4 className="font-semibold text-slate-800">John Smith</h4>
-                <p className="text-sm text-slate-500">johnsmith@gmail.com</p>
+                <h4 className="font-semibold text-slate-800">
+                  John Smith
+                </h4>
+                <p className="text-sm text-slate-500">
+                  johnsmith@gmail.com
+                </p>
               </div>
 
               <div
@@ -112,14 +135,18 @@ export default function InquiryManagementUI() {
                   })
                 }
               >
-                <h4 className="font-semibold text-slate-800">Sarah Wilson</h4>
-                <p className="text-sm text-slate-500">sarah@gmail.com</p>
+                <h4 className="font-semibold text-slate-800">
+                  Sarah Wilson
+                </h4>
+                <p className="text-sm text-slate-500">
+                  sarah@gmail.com
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* CHAT WINDOW */}
+        {/* ================= CHAT WINDOW ================= */}
         <div className="col-span-8">
           <div className="bg-white rounded-3xl shadow-lg h-full flex flex-col overflow-hidden">
 
@@ -152,10 +179,10 @@ export default function InquiryManagementUI() {
                   }`}
                 >
                   <div
-                    className={`px-4 py-3 max-w-md rounded-2xl ${
+                    className={`px-4 py-3 max-w-md rounded-2xl text-sm ${
                       msg.sender === "agent"
                         ? "bg-blue-600 text-white"
-                        : "bg-white border"
+                        : "bg-white border text-slate-800"
                     }`}
                   >
                     {msg.text}
